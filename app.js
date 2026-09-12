@@ -97,13 +97,12 @@ function applyConfig() {
     renderTotals();
 }
 
-function getDecimalsForDisplay() {
-    // COP sin decimales, resto usa config.decimalPlaces
-    return config.baseCurrency === 'COP' ? 0 : config.decimalPlaces;
+function getDecimalsForCurrency(currency) {
+    return currency === 'COP' ? 0 : config.decimalPlaces;
 }
 
-function formatNumber(num) {
-    const decimals = getDecimalsForDisplay();
+function formatNumber(num, currency) {
+    const decimals = getDecimalsForCurrency(currency || config.baseCurrency);
     return Number(num).toLocaleString('es-CO', {
         minimumFractionDigits: decimals,
         maximumFractionDigits: decimals
@@ -171,7 +170,7 @@ function updateDisplay() {
     }
     
     // Display cliente (volteado) - SIEMPRE muestra lo que se está digitando o el total
-    displayAmount.textContent = formatNumber(displayValue);
+    displayAmount.textContent = formatNumber(displayValue, config.baseCurrency);
     if (showPendingOp) {
         pendingOpEl.textContent = pendingOpSymbol;
         pendingOpEl.style.display = 'inline-block';
@@ -180,7 +179,7 @@ function updateDisplay() {
     }
     
     // Display vendedor (normal)
-    sellerAmount.textContent = formatNumber(sellerValue);
+    sellerAmount.textContent = formatNumber(sellerValue, config.baseCurrency);
     if (showPendingOp) {
         sellerPending.textContent = pendingOpSymbol;
         sellerPending.style.display = 'inline-block';
@@ -192,7 +191,7 @@ function updateDisplay() {
     if (currentInput) {
         if (total !== 0 || pendingAction) {
             const opText = pendingAction ? (pendingAction === 'add' ? '+' : '−') : '';
-            subDisplay.textContent = `Total: ${formatNumber(total)} ${CURRENCY_SYMBOLS[config.baseCurrency]}${config.baseCurrency} ${opText}${formatNumber(parseInput(currentInput))}`;
+            subDisplay.textContent = `Total: ${formatNumber(total, config.baseCurrency)} ${CURRENCY_SYMBOLS[config.baseCurrency]}${config.baseCurrency} ${opText}${formatNumber(parseInput(currentInput), config.baseCurrency)}`;
         } else {
             subDisplay.textContent = '';
         }
@@ -218,10 +217,10 @@ function renderTape() {
         return `
             <li class="md3-tape-item md3-tape-item--${item.action}" data-index="${index}">
                 <div class="md3-tape-item__info">
-                    <span class="md3-tape-item__operation">${sign} ${formatNumber(item.amount)} ${CURRENCY_SYMBOLS[config.baseCurrency]}${config.baseCurrency}</span>
+                    <span class="md3-tape-item__operation">${sign} ${formatNumber(item.amount, config.baseCurrency)} ${CURRENCY_SYMBOLS[config.baseCurrency]}${config.baseCurrency}</span>
                     <span class="md3-tape-item__time">${time}</span>
                 </div>
-                <span class="md3-tape-item__amount">${sign}${formatNumber(item.signedAmount)}</span>
+                <span class="md3-tape-item__amount">${sign}${formatNumber(item.signedAmount, config.baseCurrency)}</span>
             </li>
         `;
     }).join('');
@@ -234,7 +233,7 @@ function renderTotals() {
         <div class="md3-total-card ${currency === config.baseCurrency ? 'md3-total-card--highlight' : ''}" data-currency="${currency}">
             <span class="md3-total-card__label">${CURRENCY_NAMES[currency]}</span>
             <span class="md3-total-card__code">${currency}</span>
-            <span class="md3-total-card__amount">${CURRENCY_SYMBOLS[currency]}${formatNumber(results[currency])}</span>
+            <span class="md3-total-card__amount">${CURRENCY_SYMBOLS[currency]}${formatNumber(results[currency], currency)}</span>
         </div>
     `).join('');
 }
@@ -258,8 +257,7 @@ function addToTape(amount, action) {
 }
 
 function clearTape() {
-    if (tape.length === 0 && !currentInput) return;
-    if (!confirm('¿Borrar todas las operaciones?')) return;
+    if (tape.length === 0 && !currentInput && !pendingAction) return;
     
     tape = [];
     currentInput = '';
