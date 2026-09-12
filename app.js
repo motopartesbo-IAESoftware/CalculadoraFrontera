@@ -288,9 +288,7 @@ function handleActionKey(action) {
     const amount = parseInput(currentInput);
     
     if (action === 'clear') {
-        currentInput = '';
-        pendingAction = null;
-        updateDisplay();
+        clearTape();
         return;
     }
     
