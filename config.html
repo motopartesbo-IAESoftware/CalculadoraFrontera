@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Configuración de calculadora de divisas">
+    <meta name="theme-color" content="#2c3e50">
+    <title>Configuración - Calculadora Frontera</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
+</head>
+<body>
+    <header class="header">
+        <h1>Configuración</h1>
+        <a href="index.html" class="config-btn" aria-label="Volver a calculadora">←</a>
+    </header>
+
+    <main class="main config-main">
+        <form id="configForm" class="config-form">
+            <section class="config-section">
+                <h2>Información de la empresa</h2>
+                <div class="input-group">
+                    <label for="companyNameInput">Nombre de la empresa:</label>
+                    <input type="text" id="companyNameInput" placeholder="Mi Negocio" aria-label="Nombre de la empresa">
+                </div>
+            </section>
+
+            <section class="config-section">
+                <h2>Moneda base</h2>
+                <p class="help-text">La moneda que se usa habitualmente para recibir pagos</p>
+                <div class="input-group">
+                    <label for="baseCurrencyConfig">Moneda base:</label>
+                    <select id="baseCurrencyConfig" aria-label="Seleccionar moneda base">
+                        <option value="COP">Peso Colombiano (COP)</option>
+                        <option value="USD">Dólar Estadounidense (USD)</option>
+                        <option value="USDT">USDT (Tether)</option>
+                        <option value="VES">Bolívar Venezolano (VES)</option>
+                    </select>
+                </div>
+            </section>
+
+            <section class="config-section">
+                <h2>Tasas de conversión</h2>
+                <p class="help-text">Define cuánto vale 1 unidad de la moneda base en cada otra moneda.<br>Ejemplo: Si base es COP y 1 COP = 0.33 VES, ingresa 0.33 para VES.</p>
+                
+                <div class="rates-grid" id="ratesGrid">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </section>
+
+            <section class="config-section">
+                <h2>Formato de números</h2>
+                <div class="input-group">
+                    <label for="decimalPlaces">Decimales a mostrar:</label>
+                    <select id="decimalPlaces" aria-label="Número de decimales">
+                        <option value="0">0 (enteros)</option>
+                        <option value="1">1 decimal</option>
+                        <option value="2" selected>2 decimales</option>
+                        <option value="3">3 decimales</option>
+                        <option value="4">4 decimales</option>
+                    </select>
+                </div>
+            </section>
+
+            <div class="btn-group">
+                <button type="submit" class="btn-primary">Guardar configuración</button>
+                <button type="button" id="resetBtn" class="btn-danger">Restablecer valores por defecto</button>
+            </div>
+
+            <div id="saveMessage" class="save-message"></div>
+        </form>
+    </main>
+
+    <footer class="footer">
+        <p>Los cambios se aplican inmediatamente</p>
+    </footer>
+
+    <script src="config.js"></script>
+</body>
+</html>

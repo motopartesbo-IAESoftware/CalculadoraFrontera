@@ -1,0 +1,21 @@
+{
+    "name": "Calculadora Frontera",
+    "short_name": "Calc Frontera",
+    "description": "Calculadora de divisas para establecimiento comercial en la frontera Venezuela-Colombia",
+    "start_url": "index.html",
+    "display": "standalone",
+    "background_color": "#f5f6fa",
+    "theme_color": "#2c3e50",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💱</text></svg>",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": ["finance", "business", "utilities"],
+    "lang": "es",
+    "dir": "ltr"
+}

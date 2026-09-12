@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Calculadora de divisas para frontera Venezuela-Colombia">
+    <meta name="theme-color" content="#2c3e50">
+    <title>Calculadora Frontera</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💱</text></svg>">
+</head>
+<body>
+    <header class="header">
+        <h1 id="companyName">Calculadora Frontera</h1>
+        <a href="config.html" class="config-btn" aria-label="Configuración">⚙️</a>
+    </header>
+
+    <main class="main">
+        <section class="calculator-section">
+            <div class="input-group">
+                <label for="baseCurrencySelect">Moneda de entrada:</label>
+                <select id="baseCurrencySelect" aria-label="Seleccionar moneda de entrada">
+                    <option value="COP">Peso Colombiano (COP)</option>
+                    <option value="USD">Dólar Estadounidense (USD)</option>
+                    <option value="USDT">USDT (Tether)</option>
+                    <option value="VES">Bolívar Venezolano (VES)</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label for="amountInput">Monto:</label>
+                <input type="number" id="amountInput" placeholder="0" step="0.01" min="0" aria-label="Ingresar monto">
+            </div>
+
+            <button id="calculateBtn" class="btn-primary">Calcular</button>
+        </section>
+
+        <section class="results-section" aria-live="polite">
+            <h2>Totales de la venta</h2>
+            <div class="result-grid" id="resultsGrid">
+                <div class="result-card highlight" data-currency="COP">
+                    <span class="currency-label">Peso Colombiano</span>
+                    <span class="currency-code">COP</span>
+                    <span class="currency-amount" id="resultCOP">0</span>
+                </div>
+                <div class="result-card" data-currency="USD">
+                    <span class="currency-label">Dólar Estadounidense</span>
+                    <span class="currency-code">USD</span>
+                    <span class="currency-amount" id="resultUSD">0</span>
+                </div>
+                <div class="result-card" data-currency="USDT">
+                    <span class="currency-label">USDT (Tether)</span>
+                    <span class="currency-code">USDT</span>
+                    <span class="currency-amount" id="resultUSDT">0</span>
+                </div>
+                <div class="result-card" data-currency="VES">
+                    <span class="currency-label">Bolívar Venezolano</span>
+                    <span class="currency-code">VES</span>
+                    <span class="currency-amount" id="resultVES">0</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="history-section">
+            <h3>Historial reciente</h3>
+            <ul id="historyList" class="history-list"></ul>
+            <button id="clearHistoryBtn" class="btn-secondary" style="display:none;">Limpiar historial</button>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>Datos guardados localmente en el navegador</p>
+    </footer>
+
+    <script src="app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js').catch(console.error);
+        }
+    </script>
+</body>
+</html>
