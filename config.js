@@ -27,14 +27,16 @@ const DEFAULT_CONFIG = {
 };
 
 let config = { ...DEFAULT_CONFIG };
+let snackbarTimer = null;
 
 const form = document.getElementById('configForm');
 const companyNameInput = document.getElementById('companyNameInput');
 const baseCurrencyConfig = document.getElementById('baseCurrencyConfig');
 const ratesGrid = document.getElementById('ratesGrid');
 const decimalPlaces = document.getElementById('decimalPlaces');
+const decimalHelp = document.getElementById('decimalHelp');
 const resetBtn = document.getElementById('resetBtn');
-const saveMessage = document.getElementById('saveMessage');
+const snackbar = document.getElementById('snackbar');
 
 function loadConfig() {
     try {
@@ -54,34 +56,49 @@ function populateForm() {
     baseCurrencyConfig.value = config.baseCurrency;
     decimalPlaces.value = config.decimalPlaces;
     renderRates();
+    updateDecimalHelp();
+}
+
+function updateDecimalHelp() {
+    const base = baseCurrencyConfig.value;
+    if (base === 'COP') {
+        decimalHelp.textContent = 'El Peso Colombiano (COP) se muestra sin decimales. Los demás valores usarán la cantidad elegida aquí.';
+    } else {
+        decimalHelp.textContent = 'Cantidad de decimales que se mostrarán en los totales.';
+    }
 }
 
 function renderRates() {
     const baseCurrency = baseCurrencyConfig.value;
     const baseRates = DEFAULT_RATES[baseCurrency] || DEFAULT_RATES.COP;
-    
+
     ratesGrid.innerHTML = CURRENCIES
         .filter(c => c !== baseCurrency)
         .map(currency => {
             const rate = config.rates[currency] ?? baseRates[currency];
             return `
-                <div class="rate-input-group">
-                    <label for="rate${currency}">1 ${baseCurrency} =</label>
-                    <input type="number" 
-                           id="rate${currency}" 
-                           data-currency="${currency}"
-                           value="${rate}" 
-                           step="any" 
-                           min="0"
-                           aria-label="Tasa para ${CURRENCY_NAMES[currency]}">
-                    <span>${currency}</span>
+                <div class="md3-rate-field">
+                    <div class="md3-rate-field__header">
+                        <span class="md3-rate-field__code">${currency}</span>
+                        <span class="md3-rate-field__title">${CURRENCY_NAMES[currency]}</span>
+                    </div>
+                    <div class="md3-rate-field__row">
+                        <span class="md3-rate-field__row-code">1 ${baseCurrency} =</span>
+                        <input class="md3-text-field__input" type="number"
+                               id="rate${currency}"
+                               data-currency="${currency}"
+                               value="${rate}"
+                               step="any"
+                               min="0"
+                               aria-label="Tasa de ${CURRENCY_NAMES[currency]}">
+                    </div>
                 </div>
             `;
         }).join('');
-    
+
     ratesGrid.querySelectorAll('input').forEach(input => {
         input.addEventListener('input', () => {
-            input.style.borderColor = '';
+            input.classList.remove('md3-text-field__input--error');
         });
     });
 }
@@ -89,20 +106,20 @@ function renderRates() {
 function getFormData() {
     const rates = { [baseCurrencyConfig.value]: 1 };
     let valid = true;
-    
+
     ratesGrid.querySelectorAll('input').forEach(input => {
         const currency = input.dataset.currency;
         const value = parseFloat(input.value);
         if (isNaN(value) || value < 0) {
-            input.style.borderColor = 'var(--danger)';
+            input.classList.add('md3-text-field__input--error');
             valid = false;
         } else {
             rates[currency] = value;
         }
     });
-    
+
     if (!valid) return null;
-    
+
     return {
         companyName: companyNameInput.value.trim() || DEFAULT_CONFIG.companyName,
         baseCurrency: baseCurrencyConfig.value,
@@ -115,20 +132,21 @@ function saveConfig(data) {
     try {
         localStorage.setItem('calculadora_frontera_config', JSON.stringify(data));
         config = data;
-        showMessage('Configuración guardada correctamente', 'success');
+        showSnackbar('Configuración guardada', 'success');
         return true;
     } catch (e) {
         console.error('Error saving config:', e);
-        showMessage('Error al guardar la configuración', 'error');
+        showSnackbar('Error al guardar', 'error');
         return false;
     }
 }
 
-function showMessage(text, type) {
-    saveMessage.textContent = text;
-    saveMessage.className = `save-message ${type}`;
-    setTimeout(() => {
-        saveMessage.className = 'save-message';
+function showSnackbar(text, type) {
+    clearTimeout(snackbarTimer);
+    snackbar.textContent = text;
+    snackbar.className = `md3-snackbar md3-snackbar--show md3-snackbar--${type}`;
+    snackbarTimer = setTimeout(() => {
+        snackbar.className = 'md3-snackbar';
     }, 3000);
 }
 
@@ -150,17 +168,18 @@ function handleSubmit(e) {
 
 function handleBaseCurrencyChange() {
     renderRates();
+    updateDecimalHelp();
 }
 
 function init() {
     loadConfig();
-    
+
     form.addEventListener('submit', handleSubmit);
     baseCurrencyConfig.addEventListener('change', handleBaseCurrencyChange);
     resetBtn.addEventListener('click', resetToDefaults);
-    
+
     companyNameInput.addEventListener('input', () => {
-        companyNameInput.style.borderColor = '';
+        companyNameInput.classList.remove('md3-text-field__input--error');
     });
 }
 

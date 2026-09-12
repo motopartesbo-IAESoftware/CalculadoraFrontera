@@ -46,6 +46,7 @@ const tapeList = document.getElementById('tapeList');
 const emptyTape = document.getElementById('emptyTape');
 const totalsSection = document.getElementById('totalsSection');
 const totalsGrid = document.getElementById('totalsGrid');
+const scrim = document.getElementById('scrim');
 const companyNameEl = document.getElementById('companyName');
 const footerText = document.getElementById('footerText');
 const clearTapeBtn = document.getElementById('clearTapeBtn');
@@ -203,12 +204,12 @@ function renderTape() {
         const sign = item.action === 'add' ? '+' : '−';
         const time = new Date(item.timestamp).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
         return `
-            <li class="tape-item ${item.action}" data-index="${index}">
-                <div class="tape-info">
-                    <span class="tape-operation">${sign} ${formatNumber(item.amount)} ${CURRENCY_SYMBOLS[config.baseCurrency]}${config.baseCurrency}</span>
-                    <span class="tape-time">${time}</span>
+            <li class="md3-tape-item md3-tape-item--${item.action}" data-index="${index}">
+                <div class="md3-tape-item__info">
+                    <span class="md3-tape-item__operation">${sign} ${formatNumber(item.amount)} ${CURRENCY_SYMBOLS[config.baseCurrency]}${config.baseCurrency}</span>
+                    <span class="md3-tape-item__time">${time}</span>
                 </div>
-                <span class="tape-amount">${sign}${formatNumber(item.signedAmount)}</span>
+                <span class="md3-tape-item__amount">${sign}${formatNumber(item.signedAmount)}</span>
             </li>
         `;
     }).join('');
@@ -218,10 +219,10 @@ function renderTotals() {
     const results = calculateAll(lastTotal, config.baseCurrency);
     
     totalsGrid.innerHTML = CURRENCIES.map(currency => `
-        <div class="total-card ${currency === config.baseCurrency ? 'highlight' : ''}" data-currency="${currency}">
-            <span class="total-label">${CURRENCY_NAMES[currency]}</span>
-            <span class="total-code">${currency}</span>
-            <span class="total-amount">${CURRENCY_SYMBOLS[currency]}${formatNumber(results[currency])}</span>
+        <div class="md3-total-card ${currency === config.baseCurrency ? 'md3-total-card--highlight' : ''}" data-currency="${currency}">
+            <span class="md3-total-card__label">${CURRENCY_NAMES[currency]}</span>
+            <span class="md3-total-card__code">${currency}</span>
+            <span class="md3-total-card__amount">${CURRENCY_SYMBOLS[currency]}${formatNumber(results[currency])}</span>
         </div>
     `).join('');
 }
@@ -327,13 +328,14 @@ function handleActionKey(action) {
 function showTotals() {
     showingTotals = true;
     totalsSection.hidden = false;
+    scrim.hidden = false;
     renderTotals();
-    totalsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function hideTotals() {
     showingTotals = false;
     totalsSection.hidden = true;
+    scrim.hidden = true;
 }
 
 // Event handlers optimizados para respuesta táctil rápida
@@ -347,29 +349,42 @@ function handleKeyPress(keyValue, action) {
 }
 
 function handleKeypadClick(e) {
-    const key = e.target.closest('.key');
+    const key = e.target.closest('.md3-keypad-key');
     if (!key) return;
     e.preventDefault();
+    triggerRipple(key);
     const keyValue = key.dataset.key;
     const action = key.dataset.action;
     handleKeyPress(keyValue, action);
+}
+
+function triggerRipple(btn) {
+    btn.classList.remove('md3-button--active');
+    void btn.offsetWidth;
+    btn.classList.add('md3-button--active');
+    setTimeout(() => btn.classList.remove('md3-button--active'), 300);
 }
 
 function handleKeypadTouchStart(e) {
-    const key = e.target.closest('.key');
+    const key = e.target.closest('.md3-keypad-key');
     if (!key) return;
     e.preventDefault();
-    key.classList.add('key-active');
+    key.classList.add('md3-button--active');
 }
 
 function handleKeypadTouchEnd(e) {
-    const key = e.target.closest('.key');
+    const key = e.target.closest('.md3-keypad-key');
     if (!key) return;
     e.preventDefault();
-    key.classList.remove('key-active');
     const keyValue = key.dataset.key;
     const action = key.dataset.action;
     handleKeyPress(keyValue, action);
+    setTimeout(() => key.classList.remove('md3-button--active'), 300);
+}
+
+function handleKeypadTouchCancel(e) {
+    const key = e.target.closest('.md3-keypad-key');
+    if (key) key.classList.remove('md3-button--active');
 }
 
 function handleKeyboard(e) {
@@ -381,7 +396,7 @@ function handleKeyboard(e) {
         handleNumberKey(key);
     } else if (key === '.') {
         handleNumberKey('.');
-    } else if (key === '+' || key === '=') {
+    } else if (key === '+') {
         e.preventDefault();
         handleActionKey('add');
     } else if (key === '-' || key === '_') {
@@ -403,19 +418,17 @@ function init() {
     
     document.addEventListener('keydown', handleKeyboard);
     
-    const keypadGrid = document.querySelector('.keypad-grid');
-    // Click normal
+    const keypadGrid = document.querySelector('.md3-keypad-grid');
+    // Click normal (mouse / accessibility)
     keypadGrid.addEventListener('click', handleKeypadClick);
-    // Touch events para respuesta inmediata sin delay de 300ms
+    // Touch events para respuesta inmediata
     keypadGrid.addEventListener('touchstart', handleKeypadTouchStart, { passive: false });
     keypadGrid.addEventListener('touchend', handleKeypadTouchEnd, { passive: false });
-    keypadGrid.addEventListener('touchcancel', (e) => {
-        const key = e.target.closest('.key');
-        if (key) key.classList.remove('key-active');
-    }, { passive: true });
+    keypadGrid.addEventListener('touchcancel', handleKeypadTouchCancel, { passive: true });
     
     clearTapeBtn.addEventListener('click', clearTape);
     hideTotalsBtn.addEventListener('click', hideTotals);
+    scrim.addEventListener('click', hideTotals);
     
     // Prevenir zoom en doble tap
     let lastTouchEnd = 0;
