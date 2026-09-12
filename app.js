@@ -119,9 +119,21 @@ function parseInput(str) {
 
 function convertAmount(amount, fromCurrency, toCurrency) {
     if (fromCurrency === toCurrency) return amount;
-    const fromRates = DEFAULT_RATES[fromCurrency];
-    if (!fromRates || !fromRates[toCurrency]) return 0;
-    return amount * fromRates[toCurrency];
+    const base = config.baseCurrency;
+
+    if (fromCurrency === base) {
+        const rate = config.rates[toCurrency];
+        return rate ? amount * rate : 0;
+    }
+    if (toCurrency === base) {
+        const rate = config.rates[fromCurrency];
+        return rate ? amount / rate : 0;
+    }
+    const fromRate = config.rates[fromCurrency];
+    const toRate = config.rates[toCurrency];
+    if (!fromRate || !toRate) return 0;
+    const baseAmount = amount / fromRate;
+    return baseAmount * toRate;
 }
 
 function calculateAll(amount, baseCurrency) {
@@ -240,6 +252,7 @@ function addToTape(amount, action) {
     tape.push(entry);
     saveTape();
     renderTape();
+    updateDisplay();
     renderTotals();
     tapeList.scrollTop = tapeList.scrollHeight;
 }

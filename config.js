@@ -33,6 +33,7 @@ const form = document.getElementById('configForm');
 const companyNameInput = document.getElementById('companyNameInput');
 const baseCurrencyConfig = document.getElementById('baseCurrencyConfig');
 const ratesGrid = document.getElementById('ratesGrid');
+const ratesHelp = document.getElementById('ratesHelp');
 const decimalPlaces = document.getElementById('decimalPlaces');
 const decimalHelp = document.getElementById('decimalHelp');
 const resetBtn = document.getElementById('resetBtn');
@@ -56,11 +57,19 @@ function populateForm() {
     baseCurrencyConfig.value = config.baseCurrency;
     decimalPlaces.value = config.decimalPlaces;
     renderRates();
-    updateDecimalHelp();
+    updateHelpTexts();
 }
 
-function updateDecimalHelp() {
+function updateHelpTexts() {
     const base = baseCurrencyConfig.value;
+    const baseName = CURRENCY_NAMES[base];
+
+    if (base === 'COP') {
+        ratesHelp.textContent = 'Así como contestas el cambio: ¿a cómo está 1 dólar? → 3100 · ¿1 USDT? → 2850 · ¿1 bolívar? → 3. Escribe esos números.';
+    } else {
+        ratesHelp.textContent = `Escribe cuántos ${baseName} vale 1 unidad de cada moneda. Ejemplo: si recibes 1 dólar por ${base === 'USD' ? '1' : '100'} ${base}, escribe ${base === 'USD' ? '1' : '100'}.`;
+    }
+
     if (base === 'COP') {
         decimalHelp.textContent = 'El Peso Colombiano (COP) se muestra sin decimales. Los demás valores usarán la cantidad elegida aquí.';
     } else {
@@ -68,14 +77,25 @@ function updateDecimalHelp() {
     }
 }
 
+function internalRateFor(currency) {
+    const base = baseCurrencyConfig.value;
+    return config.rates[currency] ?? DEFAULT_RATES[base][currency] ?? 0;
+}
+
+function formatPrice(rate) {
+    if (!rate || rate <= 0) return '';
+    const price = 1 / rate;
+    if (price >= 100) return Math.round(price).toString();
+    return parseFloat(price.toPrecision(6)).toString();
+}
+
 function renderRates() {
-    const baseCurrency = baseCurrencyConfig.value;
-    const baseRates = DEFAULT_RATES[baseCurrency] || DEFAULT_RATES.COP;
+    const base = baseCurrencyConfig.value;
 
     ratesGrid.innerHTML = CURRENCIES
-        .filter(c => c !== baseCurrency)
+        .filter(c => c !== base)
         .map(currency => {
-            const rate = config.rates[currency] ?? baseRates[currency];
+            const price = formatPrice(internalRateFor(currency));
             return `
                 <div class="md3-rate-field">
                     <div class="md3-rate-field__header">
@@ -83,14 +103,17 @@ function renderRates() {
                         <span class="md3-rate-field__title">${CURRENCY_NAMES[currency]}</span>
                     </div>
                     <div class="md3-rate-field__row">
-                        <span class="md3-rate-field__row-code">1 ${baseCurrency} =</span>
-                        <input class="md3-text-field__input" type="number"
+                        <span class="md3-rate-field__row-code">1 ${CURRENCY_SYMBOLS[currency]} =</span>
+                        <input class="md3-text-field__input md3-rate-field__input" type="number"
+                               inputmode="decimal"
                                id="rate${currency}"
                                data-currency="${currency}"
-                               value="${rate}"
+                               value="${price}"
                                step="any"
                                min="0"
-                               aria-label="Tasa de ${CURRENCY_NAMES[currency]}">
+                               placeholder="0"
+                               aria-label="Precio de 1 ${CURRENCY_NAMES[currency]} en ${CURRENCY_NAMES[base]}">
+                        <span class="md3-rate-field__row-code">${base}</span>
                     </div>
                 </div>
             `;
@@ -104,17 +127,18 @@ function renderRates() {
 }
 
 function getFormData() {
-    const rates = { [baseCurrencyConfig.value]: 1 };
+    const base = baseCurrencyConfig.value;
+    const rates = { [base]: 1 };
     let valid = true;
 
     ratesGrid.querySelectorAll('input').forEach(input => {
         const currency = input.dataset.currency;
-        const value = parseFloat(input.value);
-        if (isNaN(value) || value < 0) {
+        const price = parseFloat(input.value);
+        if (isNaN(price) || price <= 0) {
             input.classList.add('md3-text-field__input--error');
             valid = false;
         } else {
-            rates[currency] = value;
+            rates[currency] = 1 / price;
         }
     });
 
@@ -122,7 +146,7 @@ function getFormData() {
 
     return {
         companyName: companyNameInput.value.trim() || DEFAULT_CONFIG.companyName,
-        baseCurrency: baseCurrencyConfig.value,
+        baseCurrency: base,
         rates,
         decimalPlaces: parseInt(decimalPlaces.value, 10)
     };
@@ -168,7 +192,7 @@ function handleSubmit(e) {
 
 function handleBaseCurrencyChange() {
     renderRates();
-    updateDecimalHelp();
+    updateHelpTexts();
 }
 
 function init() {

@@ -4,8 +4,8 @@
     "description": "Calculadora de divisas para establecimiento comercial en la frontera Venezuela-Colombia",
     "start_url": "index.html",
     "display": "standalone",
-    "background_color": "#111318",
-    "theme_color": "#111318",
+    "background_color": "#F5F6FA",
+    "theme_color": "#F5F6FA",
     "orientation": "portrait-primary",
     "icons": [
         {
