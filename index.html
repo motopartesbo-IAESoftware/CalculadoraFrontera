@@ -12,65 +12,66 @@
 </head>
 <body>
     <header class="header">
-        <h1 id="companyName">Calculadora Frontera</h1>
+        <h1 id="companyName">Mi Negocio</h1>
         <a href="config.html" class="config-btn" aria-label="Configuración">⚙️</a>
     </header>
 
     <main class="main">
-        <section class="calculator-section">
-            <div class="input-group">
-                <label for="baseCurrencySelect">Moneda de entrada:</label>
-                <select id="baseCurrencySelect" aria-label="Seleccionar moneda de entrada">
-                    <option value="COP">Peso Colombiano (COP)</option>
-                    <option value="USD">Dólar Estadounidense (USD)</option>
-                    <option value="USDT">USDT (Tether)</option>
-                    <option value="VES">Bolívar Venezolano (VES)</option>
-                </select>
+        <!-- Display principal grande -->
+        <section class="display-section">
+            <div class="main-display" aria-live="polite" role="status">
+                <span class="currency-symbol" id="displaySymbol">$</span>
+                <span class="display-amount" id="displayAmount">0</span>
+                <span class="display-currency" id="displayCurrency">COP</span>
             </div>
-
-            <div class="input-group">
-                <label for="amountInput">Monto:</label>
-                <input type="number" id="amountInput" placeholder="0" step="0.01" min="0" aria-label="Ingresar monto">
-            </div>
-
-            <button id="calculateBtn" class="btn-primary">Calcular</button>
+            <div class="sub-display" id="subDisplay" aria-hidden="true"></div>
         </section>
 
-        <section class="results-section" aria-live="polite">
-            <h2>Totales de la venta</h2>
-            <div class="result-grid" id="resultsGrid">
-                <div class="result-card highlight" data-currency="COP">
-                    <span class="currency-label">Peso Colombiano</span>
-                    <span class="currency-code">COP</span>
-                    <span class="currency-amount" id="resultCOP">0</span>
-                </div>
-                <div class="result-card" data-currency="USD">
-                    <span class="currency-label">Dólar Estadounidense</span>
-                    <span class="currency-code">USD</span>
-                    <span class="currency-amount" id="resultUSD">0</span>
-                </div>
-                <div class="result-card" data-currency="USDT">
-                    <span class="currency-label">USDT (Tether)</span>
-                    <span class="currency-code">USDT</span>
-                    <span class="currency-amount" id="resultUSDT">0</span>
-                </div>
-                <div class="result-card" data-currency="VES">
-                    <span class="currency-label">Bolívar Venezolano</span>
-                    <span class="currency-code">VES</span>
-                    <span class="currency-amount" id="resultVES">0</span>
-                </div>
+        <!-- Teclado numérico -->
+        <section class="keypad-section">
+            <div class="keypad-grid">
+                <button class="key key-num" data-key="7" aria-label="7">7</button>
+                <button class="key key-num" data-key="8" aria-label="8">8</button>
+                <button class="key key-num" data-key="9" aria-label="9">9</button>
+                <button class="key key-action key-add" data-action="add" aria-label="Sumar">+</button>
+
+                <button class="key key-num" data-key="4" aria-label="4">4</button>
+                <button class="key key-num" data-key="5" aria-label="5">5</button>
+                <button class="key key-num" data-key="6" aria-label="6">6</button>
+                <button class="key key-action key-subtract" data-action="subtract" aria-label="Restar">−</button>
+
+                <button class="key key-num" data-key="1" aria-label="1">1</button>
+                <button class="key key-num" data-key="2" aria-label="2">2</button>
+                <button class="key key-num" data-key="3" aria-label="3">3</button>
+                <button class="key key-action key-clear" data-action="clear" aria-label="Limpiar todo">C</button>
+
+                <button class="key key-num key-zero" data-key="0" aria-label="0">0</button>
+                <button class="key key-num" data-key="." aria-label="Decimal">.</button>
+                <button class="key key-action key-undo" data-action="undo" aria-label="Deshacer último">⌫</button>
+                <button class="key key-action key-total" data-action="total" aria-label="Ver totales en todas las monedas">=</button>
             </div>
         </section>
 
-        <section class="history-section">
-            <h3>Historial reciente</h3>
-            <ul id="historyList" class="history-list"></ul>
-            <button id="clearHistoryBtn" class="btn-secondary" style="display:none;">Limpiar historial</button>
+        <!-- Cinta de operaciones (tape) -->
+        <section class="tape-section">
+            <div class="tape-header">
+                <h3>Operaciones</h3>
+                <button id="clearTapeBtn" class="btn-ghost" aria-label="Limpiar cinta">🗑️</button>
+            </div>
+            <ul id="tapeList" class="tape-list" aria-live="polite"></ul>
+            <div id="emptyTape" class="empty-tape">Sin operaciones aún</div>
+        </section>
+
+        <!-- Totales en todas las monedas (compacto) -->
+        <section class="totals-section" id="totalsSection" hidden>
+            <h3>Totales en todas las monedas</h3>
+            <div class="totals-grid" id="totalsGrid"></div>
+            <button id="hideTotalsBtn" class="btn-secondary">Ocultar totales</button>
         </section>
     </main>
 
     <footer class="footer">
-        <p>Datos guardados localmente en el navegador</p>
+        <p id="footerText">Datos guardados localmente</p>
     </footer>
 
     <script src="app.js"></script>

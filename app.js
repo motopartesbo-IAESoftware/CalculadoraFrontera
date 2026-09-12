@@ -22,20 +22,29 @@ const DEFAULT_RATES = {
 const DEFAULT_CONFIG = {
     companyName: 'Mi Negocio',
     baseCurrency: 'COP',
-    rates: DEFAULT_RATES.COP,
+    rates: { ...DEFAULT_RATES.COP },
     decimalPlaces: 2
 };
 
 let config = { ...DEFAULT_CONFIG };
-let history = [];
+let tape = [];
+let currentInput = '';
+let pendingAction = null; // 'add' | 'subtract'
+let lastTotal = 0;
+let showingTotals = false;
 
-const amountInput = document.getElementById('amountInput');
-const baseCurrencySelect = document.getElementById('baseCurrencySelect');
-const calculateBtn = document.getElementById('calculateBtn');
-const resultsGrid = document.getElementById('resultsGrid');
-const historyList = document.getElementById('historyList');
-const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+const displayAmount = document.getElementById('displayAmount');
+const displaySymbol = document.getElementById('displaySymbol');
+const displayCurrency = document.getElementById('displayCurrency');
+const subDisplay = document.getElementById('subDisplay');
+const tapeList = document.getElementById('tapeList');
+const emptyTape = document.getElementById('emptyTape');
+const totalsSection = document.getElementById('totalsSection');
+const totalsGrid = document.getElementById('totalsGrid');
 const companyNameEl = document.getElementById('companyName');
+const footerText = document.getElementById('footerText');
+const clearTapeBtn = document.getElementById('clearTapeBtn');
+const hideTotalsBtn = document.getElementById('hideTotalsBtn');
 
 function loadConfig() {
     try {
@@ -50,45 +59,54 @@ function loadConfig() {
     applyConfig();
 }
 
-function loadHistory() {
+function loadTape() {
     try {
-        const saved = localStorage.getItem('calculadora_frontera_history');
+        const saved = localStorage.getItem('calculadora_frontera_tape');
         if (saved) {
-            history = JSON.parse(saved);
+            tape = JSON.parse(saved);
         }
     } catch (e) {
-        console.error('Error loading history:', e);
+        console.error('Error loading tape:', e);
     }
-    renderHistory();
+    renderTape();
+    updateDisplay();
 }
 
-function saveHistory() {
-    localStorage.setItem('calculadora_frontera_history', JSON.stringify(history.slice(0, 20)));
+function saveTape() {
+    localStorage.setItem('calculadora_frontera_tape', JSON.stringify(tape));
 }
 
 function applyConfig() {
     companyNameEl.textContent = config.companyName;
     document.title = `${config.companyName} - Calculadora`;
+    footerText.textContent = `Moneda base: ${CURRENCY_NAMES[config.baseCurrency]} • Datos guardados localmente`;
     
-    baseCurrencySelect.value = config.baseCurrency;
-    amountInput.step = config.decimalPlaces > 0 ? `0.${'0'.repeat(config.decimalPlaces - 1)}1` : '1';
+    displaySymbol.textContent = CURRENCY_SYMBOLS[config.baseCurrency];
+    displayCurrency.textContent = config.baseCurrency;
+    
+    updateDisplay();
+    renderTotals();
 }
 
 function formatNumber(num) {
     const decimals = config.decimalPlaces;
-    const formatted = Number(num).toLocaleString('es-CO', {
+    return Number(num).toLocaleString('es-CO', {
         minimumFractionDigits: decimals,
         maximumFractionDigits: decimals
     });
-    return formatted;
+}
+
+function parseInput(str) {
+    if (!str) return 0;
+    const cleaned = str.replace(/[^\d.,-]/g, '').replace(',', '.');
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? 0 : num;
 }
 
 function convertAmount(amount, fromCurrency, toCurrency) {
     if (fromCurrency === toCurrency) return amount;
-    
     const fromRates = DEFAULT_RATES[fromCurrency];
     if (!fromRates || !fromRates[toCurrency]) return 0;
-    
     return amount * fromRates[toCurrency];
 }
 
@@ -100,105 +118,237 @@ function calculateAll(amount, baseCurrency) {
     return results;
 }
 
-function updateResults(results) {
-    CURRENCIES.forEach(currency => {
-        const el = document.getElementById(`result${currency}`);
-        if (el) {
-            el.textContent = formatNumber(results[currency]);
-        }
-        
-        const card = resultsGrid.querySelector(`[data-currency="${currency}"]`);
-        if (card) {
-            card.classList.toggle('highlight', currency === baseCurrencySelect.value);
-        }
-    });
+function updateDisplay() {
+    const total = tape.reduce((sum, item) => sum + item.signedAmount, 0);
+    lastTotal = total;
+    
+    // Mostrar input actual si está escribiendo, sino el total
+    if (currentInput) {
+        displayAmount.textContent = formatNumber(parseInput(currentInput));
+        subDisplay.textContent = total !== 0 ? `Total: ${formatNumber(total)} ${CURRENCY_SYMBOLS[config.baseCurrency]}${config.baseCurrency}` : '';
+    } else {
+        displayAmount.textContent = formatNumber(total);
+        subDisplay.textContent = '';
+    }
 }
 
-function addToHistory(amount, baseCurrency, results) {
-    const entry = {
-        timestamp: Date.now(),
-        amount,
-        baseCurrency,
-        results: { ...results }
-    };
-    history.unshift(entry);
-    saveHistory();
-    renderHistory();
-}
-
-function renderHistory() {
-    if (history.length === 0) {
-        historyList.innerHTML = '<li class="empty-history">Sin cálculos recientes</li>';
-        clearHistoryBtn.style.display = 'none';
+function renderTape() {
+    if (tape.length === 0) {
+        tapeList.innerHTML = '';
+        emptyTape.style.display = 'flex';
+        clearTapeBtn.style.display = 'none';
         return;
     }
     
-    clearHistoryBtn.style.display = 'block';
+    emptyTape.style.display = 'none';
+    clearTapeBtn.style.display = 'flex';
     
-    historyList.innerHTML = history.map(entry => {
-        const baseAmount = entry.results[entry.baseCurrency];
-        const date = new Date(entry.timestamp).toLocaleString('es-CO', {
-            hour: '2-digit',
-            minute: '2-digit',
-            day: '2-digit',
-            month: '2-digit'
-        });
+    tapeList.innerHTML = tape.map((item, index) => {
+        const sign = item.action === 'add' ? '+' : '−';
+        const time = new Date(item.timestamp).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
         return `
-            <li class="history-item">
-                <div class="history-info">
-                    <span class="history-main">${formatNumber(baseAmount)} ${CURRENCY_SYMBOLS[entry.baseCurrency]}${entry.baseCurrency}</span>
-                    <span class="history-details">${date} • ${CURRENCY_NAMES[entry.baseCurrency]}</span>
+            <li class="tape-item ${item.action}" data-index="${index}">
+                <div class="tape-info">
+                    <span class="tape-operation">${sign} ${formatNumber(item.amount)} ${CURRENCY_SYMBOLS[config.baseCurrency]}${config.baseCurrency}</span>
+                    <span class="tape-time">${time}</span>
                 </div>
-                <span class="history-amount">${formatNumber(entry.results.VES)} ${CURRENCY_SYMBOLS.VES}VES</span>
+                <span class="tape-amount">${sign}${formatNumber(item.signedAmount)}</span>
             </li>
         `;
     }).join('');
 }
 
-function clearHistory() {
-    history = [];
-    saveHistory();
-    renderHistory();
+function renderTotals() {
+    const results = calculateAll(lastTotal, config.baseCurrency);
+    
+    totalsGrid.innerHTML = CURRENCIES.map(currency => `
+        <div class="total-card ${currency === config.baseCurrency ? 'highlight' : ''}" data-currency="${currency}">
+            <span class="total-label">${CURRENCY_NAMES[currency]}</span>
+            <span class="total-code">${currency}</span>
+            <span class="total-amount">${CURRENCY_SYMBOLS[currency]}${formatNumber(results[currency])}</span>
+        </div>
+    `).join('');
 }
 
-function handleCalculate() {
-    const amount = parseFloat(amountInput.value);
-    const baseCurrency = baseCurrencySelect.value;
+function addToTape(amount, action) {
+    if (amount === 0) return;
     
-    if (isNaN(amount) || amount < 0) {
-        amountInput.focus();
-        amountInput.style.borderColor = 'var(--danger)';
-        setTimeout(() => amountInput.style.borderColor = '', 1500);
+    const entry = {
+        timestamp: Date.now(),
+        amount,
+        action, // 'add' | 'subtract'
+        signedAmount: action === 'add' ? amount : -amount
+    };
+    
+    tape.push(entry);
+    saveTape();
+    renderTape();
+    updateDisplay();
+    renderTotals();
+    
+    // Scroll al final
+    tapeList.scrollTop = tapeList.scrollHeight;
+}
+
+function clearTape() {
+    if (tape.length === 0) return;
+    if (!confirm('¿Borrar todas las operaciones?')) return;
+    
+    tape = [];
+    currentInput = '';
+    pendingAction = null;
+    lastTotal = 0;
+    saveTape();
+    renderTape();
+    updateDisplay();
+    renderTotals();
+    hideTotals();
+}
+
+function handleNumberKey(key) {
+    if (key === '.' && currentInput.includes('.')) return;
+    if (key === '0' && currentInput === '0') return;
+    
+    if (currentInput === '0' && key !== '.') {
+        currentInput = key;
+    } else {
+        currentInput += key;
+    }
+    updateDisplay();
+}
+
+function handleActionKey(action) {
+    const amount = parseInput(currentInput);
+    
+    if (action === 'clear') {
+        currentInput = '';
+        pendingAction = null;
+        updateDisplay();
         return;
     }
     
-    const results = calculateAll(amount, baseCurrency);
-    updateResults(results);
-    addToHistory(amount, baseCurrency, results);
+    if (action === 'undo') {
+        if (currentInput) {
+            currentInput = currentInput.slice(0, -1);
+            if (!currentInput) currentInput = '';
+            updateDisplay();
+        } else if (tape.length > 0) {
+            // Deshacer última operación
+            tape.pop();
+            saveTape();
+            renderTape();
+            updateDisplay();
+            renderTotals();
+        }
+        return;
+    }
     
-    amountInput.value = '';
-    amountInput.focus();
+    if (action === 'total') {
+        if (currentInput && pendingAction) {
+            addToTape(amount, pendingAction);
+            currentInput = '';
+            pendingAction = null;
+        }
+        showTotals();
+        return;
+    }
+    
+    // add o subtract
+    if (currentInput) {
+        if (pendingAction) {
+            // Ya hay una acción pendiente, ejecutarla primero
+            addToTape(amount, pendingAction);
+        }
+        pendingAction = action;
+        currentInput = '';
+        updateDisplay();
+    } else if (pendingAction) {
+        // Cambiar la acción pendiente
+        pendingAction = action;
+        updateDisplay();
+    }
 }
 
-function handleInputChange() {
-    amountInput.style.borderColor = '';
+function showTotals() {
+    showingTotals = true;
+    totalsSection.hidden = false;
+    renderTotals();
+    totalsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function hideTotals() {
+    showingTotals = false;
+    totalsSection.hidden = true;
+}
+
+function handleKeypadClick(e) {
+    const key = e.target.closest('.key');
+    if (!key) return;
+    
+    const keyValue = key.dataset.key;
+    const action = key.dataset.action;
+    
+    if (keyValue !== undefined) {
+        handleNumberKey(keyValue);
+    } else if (action) {
+        handleActionKey(action);
+    }
+    
+    // Feedback táctil
+    if (navigator.vibrate) {
+        navigator.vibrate(10);
+    }
+}
+
+function handleKeyboard(e) {
+    // Evitar interferencia con inputs
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    
+    const key = e.key;
+    
+    if (key >= '0' && key <= '9') {
+        handleNumberKey(key);
+    } else if (key === '.') {
+        handleNumberKey('.');
+    } else if (key === '+' || key === '=') {
+        e.preventDefault();
+        handleActionKey('add');
+    } else if (key === '-' || key === '_') {
+        e.preventDefault();
+        handleActionKey('subtract');
+    } else if (key === 'Enter' || key === '=') {
+        e.preventDefault();
+        handleActionKey('total');
+    } else if (key === 'Escape' || key === 'c' || key === 'C') {
+        handleActionKey('clear');
+    } else if (key === 'Backspace') {
+        handleActionKey('undo');
+    }
 }
 
 function init() {
     loadConfig();
-    loadHistory();
+    loadTape();
     
-    calculateBtn.addEventListener('click', handleCalculate);
-    amountInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') handleCalculate();
-    });
-    amountInput.addEventListener('input', handleInputChange);
-    baseCurrencySelect.addEventListener('change', () => {
-        amountInput.focus();
-    });
-    clearHistoryBtn.addEventListener('click', clearHistory);
+    // Eventos teclado
+    document.addEventListener('keydown', handleKeyboard);
     
-    amountInput.focus();
+    // Eventos keypad
+    document.querySelector('.keypad-grid').addEventListener('click', handleKeypadClick);
+    
+    // Botones de cinta y totales
+    clearTapeBtn.addEventListener('click', clearTape);
+    hideTotalsBtn.addEventListener('click', hideTotals);
+    
+    // Prevenir zoom en doble tap en iOS
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', (e) => {
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) {
+            e.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, { passive: false });
 }
 
 document.addEventListener('DOMContentLoaded', init);
