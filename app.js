@@ -96,8 +96,13 @@ function applyConfig() {
     renderTotals();
 }
 
+function getDecimalsForDisplay() {
+    // COP sin decimales, resto usa config.decimalPlaces
+    return config.baseCurrency === 'COP' ? 0 : config.decimalPlaces;
+}
+
 function formatNumber(num) {
-    const decimals = config.decimalPlaces;
+    const decimals = getDecimalsForDisplay();
     return Number(num).toLocaleString('es-CO', {
         minimumFractionDigits: decimals,
         maximumFractionDigits: decimals
@@ -126,17 +131,20 @@ function calculateAll(amount, baseCurrency) {
     return results;
 }
 
+function getCurrentTotal() {
+    return tape.reduce((sum, item) => sum + item.signedAmount, 0);
+}
+
 function updateDisplay() {
-    const total = tape.reduce((sum, item) => sum + item.signedAmount, 0);
+    const total = getCurrentTotal();
     lastTotal = total;
     
-    // Determinar qué mostrar en el display principal
     let displayValue, sellerValue;
     let showPendingOp = false;
     let pendingOpSymbol = '';
     
     if (currentInput) {
-        // Usuario está escribiendo un número
+        // Usuario está escribiendo un número - mostrar LO QUE ESTÁ ESCRIBIENDO
         displayValue = parseInput(currentInput);
         sellerValue = displayValue;
         if (pendingAction) {
@@ -144,12 +152,12 @@ function updateDisplay() {
             pendingOpSymbol = pendingAction === 'add' ? '+' : '−';
         }
     } else {
-        // No hay input actual, mostrar total
+        // No hay input actual, mostrar total acumulado
         displayValue = total;
         sellerValue = total;
     }
     
-    // Actualizar display cliente (volteado)
+    // Display cliente (volteado) - SIEMPRE muestra lo que se está digitando o el total
     displayAmount.textContent = formatNumber(displayValue);
     if (showPendingOp) {
         pendingOpEl.textContent = pendingOpSymbol;
@@ -158,7 +166,7 @@ function updateDisplay() {
         pendingOpEl.style.display = 'none';
     }
     
-    // Actualizar display vendedor (normal)
+    // Display vendedor (normal)
     sellerAmount.textContent = formatNumber(sellerValue);
     if (showPendingOp) {
         sellerPending.textContent = pendingOpSymbol;
@@ -167,9 +175,14 @@ function updateDisplay() {
         sellerPending.style.display = 'none';
     }
     
-    // Sub-display: mostrar total acumulado si hay input pendiente
-    if (currentInput && total !== 0) {
-        subDisplay.textContent = `Total: ${formatNumber(total)} ${CURRENCY_SYMBOLS[config.baseCurrency]}${config.baseCurrency}`;
+    // Sub-display: mostrar total acumulado + operación pendiente si hay input
+    if (currentInput) {
+        if (total !== 0 || pendingAction) {
+            const opText = pendingAction ? (pendingAction === 'add' ? '+' : '−') : '';
+            subDisplay.textContent = `Total: ${formatNumber(total)} ${CURRENCY_SYMBOLS[config.baseCurrency]}${config.baseCurrency} ${opText}${formatNumber(parseInput(currentInput))}`;
+        } else {
+            subDisplay.textContent = '';
+        }
     } else {
         subDisplay.textContent = '';
     }
@@ -219,17 +232,14 @@ function addToTape(amount, action) {
     const entry = {
         timestamp: Date.now(),
         amount,
-        action, // 'add' | 'subtract'
+        action,
         signedAmount: action === 'add' ? amount : -amount
     };
     
     tape.push(entry);
     saveTape();
     renderTape();
-    updateDisplay();
     renderTotals();
-    
-    // Scroll al final
     tapeList.scrollTop = tapeList.scrollHeight;
 }
 
@@ -276,7 +286,6 @@ function handleActionKey(action) {
             if (!currentInput) currentInput = '';
             updateDisplay();
         } else if (tape.length > 0) {
-            // Deshacer última operación
             tape.pop();
             saveTape();
             renderTape();
@@ -287,33 +296,29 @@ function handleActionKey(action) {
     }
     
     if (action === 'total') {
-        if (currentInput && pendingAction) {
-            // Si hay input pendiente con operación, ejecutarlo primero
-            addToTape(amount, pendingAction);
+        // IGUAL: si hay número digitado, AGREGARLO a la cinta con la operación pendiente (o suma por defecto)
+        if (currentInput) {
+            const actionToUse = pendingAction || 'add';
+            addToTape(amount, actionToUse);
             currentInput = '';
             pendingAction = null;
-        } else if (currentInput && !pendingAction && tape.length === 0) {
-            // Primer número sin operación: tratarlo como suma inicial
-            addToTape(amount, 'add');
-            currentInput = '';
         }
         showTotals();
         return;
     }
     
-    // add o subtract
+    // BOTÓN + O - : Registrar INMEDIATAMENTE lo que hay en pantalla
     if (currentInput) {
-        // Hay un número ingresado, registrar la operación
         addToTape(amount, action);
         currentInput = '';
         pendingAction = null;
         updateDisplay();
     } else if (pendingAction) {
-        // Cambiar la operación pendiente (sin número nuevo)
+        // Cambiar operación pendiente sin número nuevo
         pendingAction = action;
         updateDisplay();
     } else {
-        // No hay número ni operación pendiente, solo guardar la acción para el próximo número
+        // No hay número, guardar operación para el próximo número
         pendingAction = action;
         updateDisplay();
     }
@@ -331,27 +336,43 @@ function hideTotals() {
     totalsSection.hidden = true;
 }
 
-function handleKeypadClick(e) {
-    const key = e.target.closest('.key');
-    if (!key) return;
-    
-    const keyValue = key.dataset.key;
-    const action = key.dataset.action;
-    
+// Event handlers optimizados para respuesta táctil rápida
+function handleKeyPress(keyValue, action) {
     if (keyValue !== undefined) {
         handleNumberKey(keyValue);
     } else if (action) {
         handleActionKey(action);
     }
-    
-    // Feedback táctil
-    if (navigator.vibrate) {
-        navigator.vibrate(10);
-    }
+    if (navigator.vibrate) navigator.vibrate(5);
+}
+
+function handleKeypadClick(e) {
+    const key = e.target.closest('.key');
+    if (!key) return;
+    e.preventDefault();
+    const keyValue = key.dataset.key;
+    const action = key.dataset.action;
+    handleKeyPress(keyValue, action);
+}
+
+function handleKeypadTouchStart(e) {
+    const key = e.target.closest('.key');
+    if (!key) return;
+    e.preventDefault();
+    key.classList.add('key-active');
+}
+
+function handleKeypadTouchEnd(e) {
+    const key = e.target.closest('.key');
+    if (!key) return;
+    e.preventDefault();
+    key.classList.remove('key-active');
+    const keyValue = key.dataset.key;
+    const action = key.dataset.action;
+    handleKeyPress(keyValue, action);
 }
 
 function handleKeyboard(e) {
-    // Evitar interferencia con inputs
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
     
     const key = e.key;
@@ -380,23 +401,27 @@ function init() {
     loadConfig();
     loadTape();
     
-    // Eventos teclado
     document.addEventListener('keydown', handleKeyboard);
     
-    // Eventos keypad
-    document.querySelector('.keypad-grid').addEventListener('click', handleKeypadClick);
+    const keypadGrid = document.querySelector('.keypad-grid');
+    // Click normal
+    keypadGrid.addEventListener('click', handleKeypadClick);
+    // Touch events para respuesta inmediata sin delay de 300ms
+    keypadGrid.addEventListener('touchstart', handleKeypadTouchStart, { passive: false });
+    keypadGrid.addEventListener('touchend', handleKeypadTouchEnd, { passive: false });
+    keypadGrid.addEventListener('touchcancel', (e) => {
+        const key = e.target.closest('.key');
+        if (key) key.classList.remove('key-active');
+    }, { passive: true });
     
-    // Botones de cinta y totales
     clearTapeBtn.addEventListener('click', clearTape);
     hideTotalsBtn.addEventListener('click', hideTotals);
     
-    // Prevenir zoom en doble tap en iOS
+    // Prevenir zoom en doble tap
     let lastTouchEnd = 0;
     document.addEventListener('touchend', (e) => {
         const now = Date.now();
-        if (now - lastTouchEnd <= 300) {
-            e.preventDefault();
-        }
+        if (now - lastTouchEnd <= 300) e.preventDefault();
         lastTouchEnd = now;
     }, { passive: false });
 }
