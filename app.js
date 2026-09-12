@@ -36,6 +36,11 @@ let showingTotals = false;
 const displayAmount = document.getElementById('displayAmount');
 const displaySymbol = document.getElementById('displaySymbol');
 const displayCurrency = document.getElementById('displayCurrency');
+const pendingOpEl = document.getElementById('pendingOp');
+const sellerSymbol = document.getElementById('sellerSymbol');
+const sellerAmount = document.getElementById('sellerAmount');
+const sellerCurrency = document.getElementById('sellerCurrency');
+const sellerPending = document.getElementById('sellerPending');
 const subDisplay = document.getElementById('subDisplay');
 const tapeList = document.getElementById('tapeList');
 const emptyTape = document.getElementById('emptyTape');
@@ -81,8 +86,11 @@ function applyConfig() {
     document.title = `${config.companyName} - Calculadora`;
     footerText.textContent = `Moneda base: ${CURRENCY_NAMES[config.baseCurrency]} • Datos guardados localmente`;
     
-    displaySymbol.textContent = CURRENCY_SYMBOLS[config.baseCurrency];
+    const symbol = CURRENCY_SYMBOLS[config.baseCurrency];
+    displaySymbol.textContent = symbol;
+    sellerSymbol.textContent = symbol;
     displayCurrency.textContent = config.baseCurrency;
+    sellerCurrency.textContent = config.baseCurrency;
     
     updateDisplay();
     renderTotals();
@@ -122,12 +130,47 @@ function updateDisplay() {
     const total = tape.reduce((sum, item) => sum + item.signedAmount, 0);
     lastTotal = total;
     
-    // Mostrar input actual si está escribiendo, sino el total
+    // Determinar qué mostrar en el display principal
+    let displayValue, sellerValue;
+    let showPendingOp = false;
+    let pendingOpSymbol = '';
+    
     if (currentInput) {
-        displayAmount.textContent = formatNumber(parseInput(currentInput));
-        subDisplay.textContent = total !== 0 ? `Total: ${formatNumber(total)} ${CURRENCY_SYMBOLS[config.baseCurrency]}${config.baseCurrency}` : '';
+        // Usuario está escribiendo un número
+        displayValue = parseInput(currentInput);
+        sellerValue = displayValue;
+        if (pendingAction) {
+            showPendingOp = true;
+            pendingOpSymbol = pendingAction === 'add' ? '+' : '−';
+        }
     } else {
-        displayAmount.textContent = formatNumber(total);
+        // No hay input actual, mostrar total
+        displayValue = total;
+        sellerValue = total;
+    }
+    
+    // Actualizar display cliente (volteado)
+    displayAmount.textContent = formatNumber(displayValue);
+    if (showPendingOp) {
+        pendingOpEl.textContent = pendingOpSymbol;
+        pendingOpEl.style.display = 'inline-block';
+    } else {
+        pendingOpEl.style.display = 'none';
+    }
+    
+    // Actualizar display vendedor (normal)
+    sellerAmount.textContent = formatNumber(sellerValue);
+    if (showPendingOp) {
+        sellerPending.textContent = pendingOpSymbol;
+        sellerPending.style.display = 'inline-block';
+    } else {
+        sellerPending.style.display = 'none';
+    }
+    
+    // Sub-display: mostrar total acumulado si hay input pendiente
+    if (currentInput && total !== 0) {
+        subDisplay.textContent = `Total: ${formatNumber(total)} ${CURRENCY_SYMBOLS[config.baseCurrency]}${config.baseCurrency}`;
+    } else {
         subDisplay.textContent = '';
     }
 }
@@ -191,7 +234,7 @@ function addToTape(amount, action) {
 }
 
 function clearTape() {
-    if (tape.length === 0) return;
+    if (tape.length === 0 && !currentInput) return;
     if (!confirm('¿Borrar todas las operaciones?')) return;
     
     tape = [];
@@ -245,9 +288,14 @@ function handleActionKey(action) {
     
     if (action === 'total') {
         if (currentInput && pendingAction) {
+            // Si hay input pendiente con operación, ejecutarlo primero
             addToTape(amount, pendingAction);
             currentInput = '';
             pendingAction = null;
+        } else if (currentInput && !pendingAction && tape.length === 0) {
+            // Primer número sin operación: tratarlo como suma inicial
+            addToTape(amount, 'add');
+            currentInput = '';
         }
         showTotals();
         return;
@@ -255,15 +303,17 @@ function handleActionKey(action) {
     
     // add o subtract
     if (currentInput) {
-        if (pendingAction) {
-            // Ya hay una acción pendiente, ejecutarla primero
-            addToTape(amount, pendingAction);
-        }
-        pendingAction = action;
+        // Hay un número ingresado, registrar la operación
+        addToTape(amount, action);
         currentInput = '';
+        pendingAction = null;
         updateDisplay();
     } else if (pendingAction) {
-        // Cambiar la acción pendiente
+        // Cambiar la operación pendiente (sin número nuevo)
+        pendingAction = action;
+        updateDisplay();
+    } else {
+        // No hay número ni operación pendiente, solo guardar la acción para el próximo número
         pendingAction = action;
         updateDisplay();
     }

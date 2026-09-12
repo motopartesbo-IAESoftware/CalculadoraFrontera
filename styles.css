@@ -112,32 +112,37 @@ body {
     min-height: 0;
 }
 
-/* Display principal */
+/* Display section - contiene ambos displays */
 .display-section {
     background: var(--display-bg);
     border-radius: var(--radius-lg);
     padding: 1.5rem 1rem;
     box-shadow: var(--shadow);
-    text-align: right;
+    position: relative;
 }
 
-.main-display {
+/* Display principal VOLTEADO 180° para el cliente */
+.customer-display {
+    transform: rotate(180deg);
+    transform-origin: center center;
     display: flex;
     align-items: baseline;
     justify-content: flex-end;
     gap: 0.5rem;
-    min-height: 80px;
+    min-height: 100px;
     margin-bottom: 0.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid rgba(255,255,255,0.1);
 }
 
-.display-symbol {
+.customer-display .currency-symbol {
     font-size: 2rem;
     font-weight: 700;
     color: var(--accent);
     line-height: 1;
 }
 
-.display-amount {
+.customer-display .display-amount {
     font-size: clamp(3rem, 12vw, 4.5rem);
     font-weight: 700;
     color: var(--display-text);
@@ -149,7 +154,7 @@ body {
     min-width: 0;
 }
 
-.display-currency {
+.customer-display .display-currency {
     font-size: 1.25rem;
     font-weight: 600;
     color: var(--text-muted);
@@ -157,12 +162,72 @@ body {
     white-space: nowrap;
 }
 
-.sub-display {
-    font-size: 1rem;
+/* Indicador de operación pendiente en display cliente */
+.customer-display .pending-op {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--warning);
+    line-height: 1;
+    margin-right: 0.5rem;
+    min-width: 1.5em;
+    text-align: center;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Display del vendedor (orientación normal, pequeño) */
+.seller-display {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: 0.375rem;
+    padding: 0.5rem 0.25rem;
+    font-size: 0.85rem;
     color: var(--text-muted);
-    min-height: 1.5em;
+    font-family: 'SF Mono', 'Monospace', monospace;
+}
+
+.seller-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+    font-weight: 600;
+    margin-right: 0.25rem;
+}
+
+.seller-amount {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--display-text);
+    font-variant-numeric: tabular-nums;
+}
+
+.seller-currency {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.seller-pending {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--warning);
+    margin-left: 0.25rem;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+.sub-display {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    min-height: 1.4em;
     text-align: right;
     font-family: 'SF Mono', 'Monospace', monospace;
+    padding-top: 0.25rem;
 }
 
 /* Teclado */
@@ -294,7 +359,7 @@ body {
     background: var(--card-bg);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow);
-    overflow: hidden;
+    overflow: hidden.
 }
 
 .tape-header {
@@ -327,7 +392,7 @@ body {
     min-height: 36px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: center.
 }
 
 .btn-ghost:hover {
@@ -443,7 +508,7 @@ body {
     padding: 1rem;
     text-align: center;
     transition: var(--transition);
-    border: 2px solid transparent;
+    border: 2px solid transparent.
 }
 
 .total-card.highlight {
@@ -479,11 +544,11 @@ body {
 
 .footer {
     padding: 0.75rem;
-    text-align: center;
+    text-align: center.
     color: var(--text-light);
     font-size: 0.7rem;
     border-top: 1px solid var(--border);
-    margin-top: auto;
+    margin-top: auto.
 }
 
 @media (prefers-color-scheme: dark) {
@@ -514,23 +579,23 @@ body {
 
     .tape-header {
         background: #3d4a56;
-        border-color: var(--border);
+        border-color: var(--border).
     }
 
     .tape-item:hover {
-        background: #3d4a56;
+        background: #3d4a56.
     }
 
     .total-card {
-        background: #3d4a56;
+        background: #3d4a56.
     }
 
     .total-card.highlight {
-        background: linear-gradient(135deg, rgba(52, 152, 219, 0.15), #3d4a56);
+        background: linear-gradient(135deg, rgba(52, 152, 219, 0.15), #3d4a56).
     }
 
     .footer {
-        border-color: var(--border);
+        border-color: var(--border).
     }
 }
 
@@ -548,20 +613,39 @@ body {
         padding: 1rem;
     }
 
-    .main-display {
-        min-height: 60px;
+    .customer-display {
+        min-height: 70px.
     }
 
-    .display-amount {
-        font-size: clamp(2rem, 8vw, 3rem);
+    .customer-display .display-amount {
+        font-size: clamp(2rem, 8vw, 3rem).
+    }
+
+    .seller-display {
+        font-size: 0.75rem.
+    }
+
+    .seller-amount {
+        font-size: 1.25rem.
     }
 
     :root {
         --key-size: 56px;
-        --key-gap: 4px;
+        --key-gap: 4px.
     }
 
     .keypad-grid {
-        padding: 4px;
+        padding: 4px.
+    }
+}
+
+/* Asegurar que el display section no cause overflow en landscape */
+@media (max-height: 600px) {
+    .display-section {
+        padding: 1rem 1rem 0.5rem.
+    }
+    
+    .customer-display {
+        min-height: 80px.
     }
 }

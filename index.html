@@ -17,13 +17,25 @@
     </header>
 
     <main class="main">
-        <!-- Display principal grande -->
+        <!-- Display principal: grande volteado para cliente + pequeño normal para vendedor -->
         <section class="display-section">
-            <div class="main-display" aria-live="polite" role="status">
+            <!-- Display volteado 180° para el cliente (frente a frente) -->
+            <div class="main-display customer-display" aria-live="polite" role="status">
                 <span class="currency-symbol" id="displaySymbol">$</span>
                 <span class="display-amount" id="displayAmount">0</span>
                 <span class="display-currency" id="displayCurrency">COP</span>
+                <span class="pending-op" id="pendingOp" aria-hidden="true"></span>
             </div>
+            
+            <!-- Copia pequeña en orientación normal para el vendedor -->
+            <div class="seller-display" aria-hidden="true">
+                <span class="seller-label">Tu vista:</span>
+                <span class="currency-symbol" id="sellerSymbol">$</span>
+                <span class="seller-amount" id="sellerAmount">0</span>
+                <span class="seller-currency" id="sellerCurrency">COP</span>
+                <span class="seller-pending" id="sellerPending"></span>
+            </div>
+            
             <div class="sub-display" id="subDisplay" aria-hidden="true"></div>
         </section>
 
