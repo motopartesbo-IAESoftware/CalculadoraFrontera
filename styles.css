@@ -555,19 +555,15 @@ body {
 }
 
 .md3-tape-list {
-    flex: 1;
-    overflow-y: auto;
     list-style: none;
-    max-height: 220px;
-    padding-bottom: 0.5rem;
-    -webkit-overflow-scrolling: touch;
 }
 
 .md3-tape-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.6rem 1.25rem;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--md-outline-variant);
     animation: md-slide-in 0.18s ease;
 }
 
@@ -684,6 +680,34 @@ body {
 
 .md3-bottom-sheet__close {
     color: var(--md-on-surface-variant);
+}
+
+.md3-bottom-sheet__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.md3-bottom-sheet__actions .md3-icon-button {
+    color: var(--md-on-surface-variant);
+}
+
+.md3-sheet-block {
+    padding-bottom: 0.25rem;
+}
+
+.md3-sheet-block__title {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+    color: var(--md-on-surface-variant);
+    margin-bottom: 0.5rem;
+}
+
+.md3-sheet-divider {
+    border-top: 1px solid var(--md-outline-variant);
+    margin: 1rem 0;
 }
 
 .md3-bottom-sheet__content {

@@ -126,32 +126,34 @@
             </div>
         </section>
 
-        <!-- Tape Section (Scrollable) -->
-        <section class="md3-tape-section" aria-label="Historial de operaciones">
-            <header class="md3-tape-header">
-                <h2 class="md3-tape-header__title">Operaciones</h2>
-                <button class="md3-icon-button md3-tape-header__action" id="clearTapeBtn" aria-label="Limpiar historial">
-                    <span class="material-symbols-rounded">delete_sweep</span>
-                </button>
-            </header>
-            <ul class="md3-tape-list" id="tapeList" role="list"></ul>
-            <div class="md3-empty-state" id="emptyTape" aria-hidden="true">
-                <span class="material-symbols-rounded md3-empty-state__icon">receipt_long</span>
-                <p class="md3-empty-state__text">Sin operaciones aún</p>
-            </div>
-        </section>
-
-        <!-- Totals Bottom Sheet -->
-        <section class="md3-bottom-sheet" id="totalsSection" hidden role="dialog" aria-label="Totales en todas las monedas" aria-modal="true">
+        <!-- Totals Bottom Sheet (operaciones + resultados) -->
+        <section class="md3-bottom-sheet" id="totalsSection" hidden role="dialog" aria-label="Detalle de operaciones y totales en todas las monedas" aria-modal="true">
             <div class="md3-bottom-sheet__handle" aria-hidden="true"></div>
             <header class="md3-bottom-sheet__header">
-                <h2 class="md3-bottom-sheet__title">Totales en todas las monedas</h2>
-                <button class="md3-icon-button md3-bottom-sheet__close" id="hideTotalsBtn" aria-label="Cerrar">
-                    <span class="material-symbols-rounded">close</span>
-                </button>
+                <h2 class="md3-bottom-sheet__title">Operaciones y totales</h2>
+                <div class="md3-bottom-sheet__actions">
+                    <button class="md3-icon-button" id="clearTapeBtn" aria-label="Borrar todas las operaciones">
+                        <span class="material-symbols-rounded">delete_sweep</span>
+                    </button>
+                    <button class="md3-icon-button md3-bottom-sheet__close" id="hideTotalsBtn" aria-label="Cerrar">
+                        <span class="material-symbols-rounded">close</span>
+                    </button>
+                </div>
             </header>
             <div class="md3-bottom-sheet__content">
-                <div class="md3-totals-grid" id="totalsGrid"></div>
+                <div class="md3-sheet-block">
+                    <h3 class="md3-sheet-block__title">Operaciones</h3>
+                    <ul class="md3-tape-list" id="tapeList" role="list"></ul>
+                    <div class="md3-empty-state" id="emptyTape" aria-hidden="true">
+                        <span class="material-symbols-rounded md3-empty-state__icon">receipt_long</span>
+                        <p class="md3-empty-state__text">Sin operaciones aún</p>
+                    </div>
+                </div>
+                <div class="md3-sheet-divider" aria-hidden="true"></div>
+                <div class="md3-sheet-block">
+                    <h3 class="md3-sheet-block__title">Cambio en cada moneda</h3>
+                    <div class="md3-totals-grid" id="totalsGrid"></div>
+                </div>
             </div>
         </section>
     </main>

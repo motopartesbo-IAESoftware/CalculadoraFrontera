@@ -336,9 +336,11 @@ function handleActionKey(action) {
 
 function showTotals() {
     showingTotals = true;
+    renderTape();
+    renderTotals();
     totalsSection.hidden = false;
     scrim.hidden = false;
-    renderTotals();
+    totalsSection.scrollTop = 0;
 }
 
 function hideTotals() {
