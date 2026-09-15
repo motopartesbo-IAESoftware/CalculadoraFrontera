@@ -1,4 +1,4 @@
-const CACHE_NAME = 'calculadora-frontera-v5';
+const CACHE_NAME = 'calculadora-frontera-v6';
 const ASSETS = [
     './',
     './index.html',

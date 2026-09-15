@@ -51,6 +51,8 @@ const companyNameEl = document.getElementById('companyName');
 const footerText = document.getElementById('footerText');
 const clearTapeBtn = document.getElementById('clearTapeBtn');
 const hideTotalsBtn = document.getElementById('hideTotalsBtn');
+const runningTotal = document.getElementById('runningTotal');
+const runningTotalValue = document.getElementById('runningTotalValue');
 
 function loadConfig() {
     try {
@@ -147,6 +149,19 @@ function getCurrentTotal() {
     return tape.reduce((sum, item) => sum + item.signedAmount, 0);
 }
 
+function updateRunningTotal() {
+    const hasFlow = tape.length > 0 || currentInput !== '' || pendingAction;
+    runningTotal.hidden = !hasFlow;
+    if (!hasFlow) {
+        runningTotalValue.textContent = '';
+        return;
+    }
+
+    const countText = tape.length === 1 ? '1 operación' : `${tape.length} operaciones`;
+    const totalText = `Total: ${formatNumber(getCurrentTotal(), config.baseCurrency)} ${CURRENCY_SYMBOLS[config.baseCurrency]}${config.baseCurrency}`;
+    runningTotalValue.textContent = tape.length > 0 ? `${totalText} · ${countText}` : `${totalText}`;
+}
+
 function updateDisplay() {
     const total = getCurrentTotal();
     lastTotal = total;
@@ -198,6 +213,8 @@ function updateDisplay() {
     } else {
         subDisplay.textContent = '';
     }
+
+    updateRunningTotal();
 }
 
 function renderTape() {
