@@ -53,6 +53,9 @@ const clearTapeBtn = document.getElementById('clearTapeBtn');
 const hideTotalsBtn = document.getElementById('hideTotalsBtn');
 const runningTotal = document.getElementById('runningTotal');
 const runningTotalValue = document.getElementById('runningTotalValue');
+const totalsBigSymbol = document.getElementById('totalsBigSymbol');
+const totalsBigAmount = document.getElementById('totalsBigAmount');
+const totalsBigCurrency = document.getElementById('totalsBigCurrency');
 
 function loadConfig() {
     try {
@@ -245,7 +248,11 @@ function renderTape() {
 
 function renderTotals() {
     const results = calculateAll(lastTotal, config.baseCurrency);
-    
+
+    totalsBigSymbol.textContent = CURRENCY_SYMBOLS[config.baseCurrency];
+    totalsBigAmount.textContent = formatNumber(results[config.baseCurrency], config.baseCurrency);
+    totalsBigCurrency.textContent = config.baseCurrency;
+
     totalsGrid.innerHTML = CURRENCIES.map(currency => `
         <div class="md3-total-card ${currency === config.baseCurrency ? 'md3-total-card--highlight' : ''}" data-currency="${currency}">
             <span class="md3-total-card__label">${CURRENCY_NAMES[currency]}</span>

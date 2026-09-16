@@ -749,6 +749,49 @@ body {
     margin: 1rem 0;
 }
 
+/* Total invertido (cliente) dentro del bottom sheet */
+.md3-totals-customer {
+    transform: rotate(180deg);
+}
+
+.md3-totals-customer__inner {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: 0.4rem;
+    background: var(--md-display-bg);
+    border-radius: var(--md-shape-large);
+    padding: 1rem 1.25rem;
+    box-shadow: var(--md-elevation-2);
+    min-height: 88px;
+}
+
+.md3-totals-customer__symbol {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--md-primary);
+    line-height: 1;
+}
+
+.md3-totals-customer__amount {
+    font-size: clamp(2.75rem, 12vw, 4.5rem);
+    font-weight: 700;
+    color: var(--md-on-display);
+    font-variant-numeric: tabular-nums;
+    font-family: 'Roboto', monospace;
+    line-height: 1;
+    flex: 1;
+    text-align: right;
+    min-width: 0;
+}
+
+.md3-totals-customer__code {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--md-on-surface-variant);
+    white-space: nowrap;
+}
+
 .md3-bottom-sheet__content {
     padding-bottom: env(safe-area-inset-bottom);
 }
