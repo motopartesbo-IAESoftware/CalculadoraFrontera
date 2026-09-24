@@ -1,189 +1,216 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#F5F6FA">
-    <meta name="description" content="Calculadora de divisas para frontera Venezuela-Colombia">
-    <title>Calculadora Frontera</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💱</text></svg>">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#e4002b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="description" content="PresuApp - Crea presupuestos con el catálogo de repuestos al estilo tiendasdaka">
+<title>PresuApp - Presupuestos</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon/icon-192.png">
+<link rel="apple-touch-icon" href="icon/icon-192.png">
+<link rel="stylesheet" href="css/styles.css">
+<script src="data/catalogo-local.js" defer></script>
+<script src="data/imagenes.js" defer></script>
 </head>
 <body>
-    <!-- Top App Bar -->
-    <header class="md3-top-app-bar" role="banner">
-        <div class="md3-top-app-bar__content">
-            <span class="md3-top-app-bar__title" id="companyName">Mi Negocio</span>
-        </div>
-        <a href="config.html" class="md3-icon-button md3-top-app-bar__action" aria-label="Configuración">
-            <span class="material-symbols-rounded">settings</span>
-        </a>
-    </header>
 
-    <main class="md3-main" role="main">
-        <!-- Display Dual Section -->
-        <section class="md3-display-section" aria-live="polite">
-            <!-- Cliente Display (Volteado 180°) -->
-            <div class="md3-customer-display" role="status" aria-label="Total para el cliente">
-                <div class="md3-customer-display__inner">
-                    <span class="md3-customer-display__currency" id="displaySymbol">$</span>
-                    <span class="md3-customer-display__amount" id="displayAmount">0</span>
-                    <span class="md3-customer-display__currency-code" id="displayCurrency">COP</span>
-                    <span class="md3-customer-display__pending" id="pendingOp" aria-hidden="true"></span>
-                </div>
-            </div>
+<!-- ======================= HEADER ======================= -->
+<header id="appHeader">
+  <div class="topbar">
+    <button class="icon-btn" id="btnMenu" aria-label="Menú" title="Categorías y marcas">
+      <svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 6h18v2H3zM3 11h18v2H3zM3 16h18v2H3z"/></svg>
+    </button>
+    <div class="brand">
+      <svg class="brand-logo" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="#e4002b" d="M7 3h10a2 2 0 0 1 2 2v2h2v14H3V7h2V5a2 2 0 0 1 2-2zm0 2v2h7a1 1 0 0 1 0 2h-1v.08A2 2 0 0 1 15 11v2a2 2 0 0 1-2 2h-1v.92A2 2 0 0 1 14 18v1h4v-2H9v2h9v-2h-2V13h2V7h-1V5H7zm2 4v2h6v-2H9zm0 4v2h4v-2H9z"/>
+      </svg>
+      <span class="brand-name">Presu<b>App</b></span>
+    </div>
+    <div class="top-actions">
+      <button id="btnRates" class="icon-btn" aria-label="Tasas y moneda" title="Tasas">
+        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15.9V19h-2v-1.1a6 6 0 0 1-3.9-2.3l1.6-1.2a4.3 4.3 0 0 0 3 1.4c1.4 0 2.3-.7 2.3-1.6 0-.8-.5-1.2-2.4-1.8-2.4-.7-3.8-1.6-3.8-3.5 0-1.7 1.3-3 3.2-3.4V5h2v1.1a4.9 4.9 0 0 1 3.1 1.7l-1.5 1.3c-.6-.8-1.5-1.2-2.6-1.2-1.3 0-2 .6-2 1.5 0 .9.6 1.2 2.5 1.8 2.4.7 3.8 1.6 3.8 3.5 0 1.8-1.4 3-3.5 3.3z"/></svg>
+      </button>
+      <button class="icon-btn cart-btn" id="btnCart" aria-label="Presupuesto" title="Ver presupuesto">
+        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 18a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm10 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7.2 14h9.6a2 2 0 0 0 1.9-1.4L22 4H5.2l-.8-2H1v2h2l3.6 7.6L5.6 13a2 2 0 0 0 1.8 2.9H19v-2H7.8l-.6-1.1z"/></svg>
+        <span class="badge" id="cartBadge" hidden>0</span>
+      </button>
+    </div>
+  </div>
+  <div class="searchbar">
+    <svg class="search-ico" viewBox="0 0 24 24"><path fill="currentColor" d="M10 2a8 8 0 1 0 4.9 14.3l5.4 5.4 1.4-1.4-5.4-5.4A8 8 0 0 0 10 2zm0 2a6 6 0 1 1 0 12 6 6 0 0 1 0-12z"/></svg>
+    <input id="searchInput" type="search" placeholder="Buscar producto, marca o código..." autocomplete="off">
+    <button id="btnClearSearch" class="search-clear" aria-label="Limpiar" hidden>×</button>
+  </div>
+</header>
 
-            <!-- Separador visual -->
-            <div class="md3-display-divider" aria-hidden="true"></div>
+<!-- ======================= DRAWER ======================= -->
+<div id="overlay" class="overlay" hidden></div>
+<aside id="drawer" class="drawer" aria-hidden="true">
+  <div class="drawer-head">
+    <span>Explorar</span>
+    <button class="icon-btn" id="btnCloseDrawer" aria-label="Cerrar">×</button>
+  </div>
+  <nav class="drawer-nav">
+    <button class="drawer-link active" data-cat="all">
+      <svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 3h8v8H3zM13 3h8v8h-8zM3 13h8v8H3zM13 13h8v8h-8z"/></svg>
+      Todos los productos
+    </button>
+    <div class="drawer-section" id="drawerCats"></div>
+    <div class="drawer-section">
+      <div class="drawer-subhead">Marcas</div>
+      <div id="drawerBrands"></div>
+    </div>
+    <div class="drawer-section drawer-footh">
+      <button class="drawer-link" id="btnNavCart">
+        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 18a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm10 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7.2 14h9.6a2 2 0 0 0 1.9-1.4L22 4H5.2l-.8-2H1v2h2l3.6 7.6L5.6 13a2 2 0 0 0 1.8 2.9H19v-2H7.8l-.6-1.1z"/></svg>
+        Ver presupuesto <b class="drawer-count" id="drawerCartCount">0</b>
+      </button>
+    </div>
+  </nav>
+</aside>
 
-            <!-- Vendedor Display (Normal) -->
-            <div class="md3-seller-display" aria-hidden="true">
-                <span class="md3-seller-display__label">Tu vista</span>
-                <span class="md3-seller-display__currency" id="sellerSymbol">$</span>
-                <span class="md3-seller-display__amount" id="sellerAmount">0</span>
-                <span class="md3-seller-display__currency-code" id="sellerCurrency">COP</span>
-                <span class="md3-seller-display__pending" id="sellerPending"></span>
-            </div>
+<!-- ======================= MAIN ======================= -->
+<main id="main">
+  <section id="home">
+    <div class="welcome">
+      <h1>Cotiza en segundos</h1>
+      <p>Busca en el catálogo, agrega al presupuesto e imprime el documento final.</p>
+    </div>
 
-            <!-- Sub-display: Total acumulado + operación actual -->
-            <div class="md3-sub-display" id="subDisplay" aria-hidden="true"></div>
-        </section>
+    <div id="catChips" class="cat-chips"></div>
 
-        <!-- Keypad Section -->
-        <section class="md3-keypad-section">
-            <div class="md3-keypad-grid" role="group" aria-label="Teclado numérico">
-                <button class="md3-button md3-button--filled md3-keypad-key md3-keypad-key--number" data-key="7" aria-label="7">
-                    <span class="md3-button__label">7</span>
-                    <span class="md3-button__ripple"></span>
-                </button>
-                <button class="md3-button md3-button--filled md3-keypad-key md3-keypad-key--number" data-key="8" aria-label="8">
-                    <span class="md3-button__label">8</span>
-                    <span class="md3-button__ripple"></span>
-                </button>
-                <button class="md3-button md3-button--filled md3-keypad-key md3-keypad-key--number" data-key="9" aria-label="9">
-                    <span class="md3-button__label">9</span>
-                    <span class="md3-button__ripple"></span>
-                </button>
-                <button class="md3-button md3-button--filled-tonal md3-keypad-key md3-keypad-key--action md3-keypad-key--add" data-action="add" aria-label="Sumar">
-                    <span class="material-symbols-rounded md3-button__icon">add</span>
-                    <span class="md3-button__ripple"></span>
-                </button>
+    <div class="toolbar">
+      <h2 id="listTitle">Todos los productos</h2>
+      <button id="btnSort" class="sort-btn" title="Ordenar">
+        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 5h18v2H3zM3 11h12v2H3zM3 17h8v2H3zM20 15l-4 4-4-4h3v-4h2v4z"/></svg>
+        <span id="sortLabel">A-Z</span>
+      </button>
+    </div>
+    <div id="brandBar" class="brand-bar" hidden></div>
 
-                <button class="md3-button md3-button--filled md3-keypad-key md3-keypad-key--number" data-key="4" aria-label="4">
-                    <span class="md3-button__label">4</span>
-                    <span class="md3-button__ripple"></span>
-                </button>
-                <button class="md3-button md3-button--filled md3-keypad-key md3-keypad-key--number" data-key="5" aria-label="5">
-                    <span class="md3-button__label">5</span>
-                    <span class="md3-button__ripple"></span>
-                </button>
-                <button class="md3-button md3-button--filled md3-keypad-key md3-keypad-key--number" data-key="6" aria-label="6">
-                    <span class="md3-button__label">6</span>
-                    <span class="md3-button__ripple"></span>
-                </button>
-                <button class="md3-button md3-button--filled-tonal md3-keypad-key md3-keypad-key--action md3-keypad-key--subtract" data-action="subtract" aria-label="Restar">
-                    <span class="material-symbols-rounded md3-button__icon">remove</span>
-                    <span class="md3-button__ripple"></span>
-                </button>
+    <div id="productGrid" class="product-grid"></div>
+    <div id="noResults" class="no-results" hidden>
+      <p>Sin resultados para la búsqueda.</p>
+      <button id="btnReset" class="btn-primary">Limpiar filtros</button>
+    </div>
+  </section>
+</main>
 
-                <button class="md3-button md3-button--filled md3-keypad-key md3-keypad-key--number" data-key="1" aria-label="1">
-                    <span class="md3-button__label">1</span>
-                    <span class="md3-button__ripple"></span>
-                </button>
-                <button class="md3-button md3-button--filled md3-keypad-key md3-keypad-key--number" data-key="2" aria-label="2">
-                    <span class="md3-button__label">2</span>
-                    <span class="md3-button__ripple"></span>
-                </button>
-                <button class="md3-button md3-button--filled md3-keypad-key md3-keypad-key--number" data-key="3" aria-label="3">
-                    <span class="md3-button__label">3</span>
-                    <span class="md3-button__ripple"></span>
-                </button>
-                <button class="md3-button md3-button--elevated md3-keypad-key md3-keypad-key--action md3-keypad-key--total" data-action="total" aria-label="Ver totales en todas las monedas">
-                    <span class="md3-button__label">=</span>
-                    <span class="md3-button__ripple"></span>
-                </button>
+<!-- ======================= BOTTOM NAV ======================= -->
+<nav id="bottomNav" class="bottom-nav">
+  <button class="nav-item active" id="btnNavHome">
+    <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 3 2 12h3v8h6v-6h2v6h6v-8h3z"/></svg>
+    <span>Inicio</span>
+  </button>
+  <button class="nav-item" id="btnMenu2">
+    <svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 3h16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm2 4v2h12V7H6zm0 4v2h8v-2H6zm0 4v2h6v-2H6z"/></svg>
+    <span>Categorías</span>
+  </button>
+  <button class="nav-item" id="btnNavCart2">
+    <svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 18a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm10 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7.2 14h9.6a2 2 0 0 0 1.9-1.4L22 4H5.2l-.8-2H1v2h2l3.6 7.6L5.6 13a2 2 0 0 0 1.8 2.9H19v-2H7.8l-.6-1.1z"/></svg>
+    <span>Presupuesto</span>
+    <b class="nav-badge" id="cartBadge2" hidden>0</b>
+  </button>
+  <button class="nav-item" id="btnRates2">
+    <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15.9V19h-2v-1.1a6 6 0 0 1-3.9-2.3l1.6-1.2a4.3 4.3 0 0 0 3 1.4c1.4 0 2.3-.7 2.3-1.6 0-.8-.5-1.2-2.4-1.8-2.4-.7-3.8-1.6-3.8-3.5 0-1.7 1.3-3 3.2-3.4V5h2v1.1a4.9 4.9 0 0 1 3.1 1.7l-1.5 1.3c-.6-.8-1.5-1.2-2.6-1.2-1.3 0-2 .6-2 1.5 0 .9.6 1.2 2.5 1.8 2.4.7 3.8 1.6 3.8 3.5 0 1.8-1.4 3-3.5 3.3z"/></svg>
+    <span>Tasa</span>
+  </button>
+</nav>
 
-                <button class="md3-button md3-button--outlined md3-keypad-key md3-keypad-key--action md3-keypad-key--clear" data-action="clear" aria-label="Reiniciar a cero y borrar operaciones">
-                    <span class="md3-button__label">C</span>
-                    <span class="md3-button__ripple"></span>
-                </button>
-                <button class="md3-button md3-button--filled md3-keypad-key md3-keypad-key--number md3-keypad-key--zero" data-key="0" aria-label="0">
-                    <span class="md3-button__label">0</span>
-                    <span class="md3-button__ripple"></span>
-                </button>
-                <button class="md3-button md3-button--filled md3-keypad-key md3-keypad-key--number" data-key="." aria-label="Decimal">
-                    <span class="md3-button__label">.</span>
-                    <span class="md3-button__ripple"></span>
-                </button>
-                <button class="md3-button md3-button--outlined md3-keypad-key md3-keypad-key--action md3-keypad-key--undo" data-action="undo" aria-label="Deshacer último">
-                    <span class="material-symbols-rounded md3-button__icon">backspace</span>
-                    <span class="md3-button__ripple"></span>
-                </button>
-            </div>
-        </section>
+<!-- ======================= BUDGET (PAGE) ======================= -->
+<section id="budget" class="budget" hidden>
+  <div class="budget-top">
+    <button class="icon-btn" id="btnBackHome" aria-label="Volver">
+      <svg viewBox="0 0 24 24"><path fill="currentColor" d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20z"/></svg>
+    </button>
+    <h2>Presupuesto</h2>
+    <button class="icon-btn danger" id="btnClearBudget" aria-label="Vaciar presupuesto" title="Vaciar presupuesto">
+      <svg viewBox="0 0 24 24"><path fill="currentColor" d="M6 7h12l-1 14H7L6 7zm3-3h6l1 2H8l1-2zm9 3 3 2H3l3-2h12z"/></svg>
+    </button>
+  </div>
 
-        <!-- Running total de operaciones -->
-        <div class="md3-running-total" id="runningTotal" hidden aria-live="polite">
-            <span class="md3-running-total__label">Qué hay en la cuenta</span>
-            <span class="md3-running-total__value" id="runningTotalValue"></span>
-        </div>
+  <div class="budget-client card">
+    <div class="field"><label>Cliente</label><input id="bClient" type="text" placeholder="Nombre del cliente"></div>
+    <div class="field-row">
+      <div class="field"><label>Teléfono</label><input id="bPhone" type="tel" placeholder="+57 ..."></div>
+      <div class="field"><label>Fecha</label><input id="bDate" type="date"></div>
+    </div>
+    <div class="field"><label>Observaciones</label><input id="bNotes" type="text" placeholder="Notas / observaciones"></div>
+  </div>
 
-        <!-- Totals Bottom Sheet (operaciones + resultados) -->
-        <section class="md3-bottom-sheet" id="totalsSection" hidden role="dialog" aria-label="Detalle de operaciones y totales en todas las monedas" aria-modal="true">
-            <div class="md3-bottom-sheet__handle" aria-hidden="true"></div>
-            <header class="md3-bottom-sheet__header">
-                <h2 class="md3-bottom-sheet__title">Operaciones y totales</h2>
-                <div class="md3-bottom-sheet__actions">
-                    <button class="md3-icon-button" id="clearTapeBtn" aria-label="Borrar todas las operaciones">
-                        <span class="material-symbols-rounded">delete_sweep</span>
-                    </button>
-                    <button class="md3-icon-button md3-bottom-sheet__close" id="hideTotalsBtn" aria-label="Cerrar">
-                        <span class="material-symbols-rounded">close</span>
-                    </button>
-                </div>
-            </header>
-            <div class="md3-bottom-sheet__content">
-                <div class="md3-totals-customer" role="status" aria-label="Total en moneda base para el cliente">
-                    <div class="md3-totals-customer__inner">
-                        <span class="md3-totals-customer__symbol" id="totalsBigSymbol">$</span>
-                        <span class="md3-totals-customer__amount" id="totalsBigAmount">0</span>
-                        <span class="md3-totals-customer__code" id="totalsBigCurrency">COP</span>
-                    </div>
-                </div>
-                <div class="md3-sheet-divider" aria-hidden="true"></div>
-                <div class="md3-sheet-block">
-                    <h3 class="md3-sheet-block__title">Operaciones</h3>
-                    <ul class="md3-tape-list" id="tapeList" role="list"></ul>
-                    <div class="md3-empty-state" id="emptyTape" aria-hidden="true">
-                        <span class="material-symbols-rounded md3-empty-state__icon">receipt_long</span>
-                        <p class="md3-empty-state__text">Sin operaciones aún</p>
-                    </div>
-                </div>
-                <div class="md3-sheet-divider" aria-hidden="true"></div>
-                <div class="md3-sheet-block">
-                    <h3 class="md3-sheet-block__title">Cambio en cada moneda</h3>
-                    <div class="md3-totals-grid" id="totalsGrid"></div>
-                </div>
-            </div>
-        </section>
-    </main>
+  <div id="budgetItems" class="budget-items"></div>
 
-    <!-- Scrim for bottom sheet -->
-    <div class="md3-scrim" id="scrim" hidden></div>
+  <div class="budget-summary card">
+    <div class="sum-row"><span>Subtotal</span><span id="sumSubtotal">$ 0</span></div>
+    <div class="sum-row">
+      <span>Descuento %</span>
+      <span class="sum-ctrl"><input id="sumDiscount" type="number" min="0" max="100" step="0.5" value="0"> <span class="pct">%</span></span>
+    </div>
+    <div class="sum-row"><span id="sumDiscLabel">Descuento</span><span id="sumDiscountAmt">$ 0</span></div>
+    <div class="sum-row iva-row">
+      <span>IVA
+        <label class="mini-t"><input id="sumIvaChk" type="checkbox"> incluir</label>
+      </span>
+      <span id="sumIvaAmt">$ 0</span>
+    </div>
+    <div class="sum-row total"><span>Total</span><span id="sumTotal">$ 0</span></div>
+    <div class="sum-note" id="sumCurrencyNote"></div>
+  </div>
 
-    <footer class="md3-footer">
-        <p id="footerText">Datos guardados localmente</p>
-    </footer>
+  <div class="budget-actions">
+    <button class="btn-primary wide" id="btnPrint">
+      <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 8h-1V3H6v5H5a3 3 0 0 0-3 3v6h4v4h12v-4h4v-6a3 3 0 0 0-3-3zM8 5h8v3H8V5zm8 14H8v-4h8v4zm3-6a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>
+      Imprimir / PDF
+    </button>
+    <button class="btn-primary wide" id="btnWhatsapp">
+      <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm5.5 14.1c-.2.7-1.3 1.3-1.9 1.4-.5.1-1.1.1-1.8-.1-.4-.1-1-.3-1.7-.6-2.9-1.3-4.8-4.2-5-4.4-.1-.2-1.2-1.6-1.2-3s.7-2.1 1-2.4c.2-.3.5-.4.7-.4h.5c.2 0 .4-.1.6.4s.7 1.8.8 1.9c.1.1.1.3 0 .5-.1.2-.2.3-.3.5l-.4.5c-.1.2-.3.3-.1.6.2.2.8 1.3 1.7 2.1 1.2 1.1 2.2 1.4 2.5 1.5.3.2.5.1.7-.1l1-1.2c.2-.2.3-.3.6-.1.3.1 1.7.8 2 .9.3.1.5.2.6.3.1.2.1.7-.1 1.2z"/></svg>
+      Enviar por WhatsApp
+    </button>
+    <button class="btn-outline wide" id="btnNewBudget">+ Nuevo presupuesto</button>
+  </div>
+</section>
 
-    <script src="app.js"></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('service-worker.js').catch(console.error);
-        }
-    </script>
+<!-- ======================= RATES MODAL ======================= -->
+<div id="ratesModal" class="modal" hidden>
+  <div class="modal-card card">
+    <div class="modal-head"><h3>Moneda y tasas</h3><button class="icon-btn" data-close>×</button></div>
+    <div class="field">
+      <label>Moneda para mostrar el presupuesto</label>
+      <select id="mCurrency">
+        <option value="COP">COP - Peso colombiano</option>
+        <option value="USD">USD - Dólar</option>
+        <option value="VES">VES - Bolívar</option>
+      </select>
+    </div>
+    <label class="row-toggle">
+      <input type="checkbox" id="mAutoRate" checked>
+      <span>Obtener tasa automática (internet)</span>
+    </label>
+    <div class="field"><label>Nombre del negocio (para el presupuesto impreso)</label><input id="mCompany" type="text" placeholder="Mi negocio"></div>
+    <div class="field"><label>WhatsApp del negocio (para el presupuesto impreso)</label><input id="mWhatsapp" type="tel" placeholder="+57 300 000 0000"></div>
+    <div class="field"><label>Dirección del negocio (para el presupuesto impreso)</label><input id="mAddress" type="text" placeholder="Calle / local / ciudad"></div>
+    <div class="field"><label>Clave de administración <span class="mini-hint">(opcional — protege tasas, IVA y datos del negocio)</span></label>
+      <input id="mClave" type="password" autocomplete="new-password" placeholder="••••••••">
+      <small class="rate-note">La clave se guarda como una "huella" (hash) cifrada en tu navegador: nadie —ni yo— puede leerla ni recuperarla, y no viaja a ningún servidor. Se pedirá para guardar cualquier cambio en tasas, IVA o datos del negocio. Como la app funciona 100% local en tu dispositivo, la clave es una protección contra cambios accidentales o curiosos; no es un candado de seguridad bancaria.</small>
+    </div>
+    <div class="field"><label>1 USD = COP</label><input id="mRateCopUsd" type="number" step="0.01" min="0"></div>
+    <div class="field"><label>1 USD = VES</label><input id="mRateUsdVes" type="number" step="0.01" min="0"></div>
+    <div class="field"><label>IVA %</label><input id="mIva" type="number" min="0" max="100" step="0.5"></div>
+    <p class="rate-note" id="mRateNote"></p>
+    <div class="modal-actions">
+      <button class="btn-outline" id="mBtnRefresh">Actualizar tasa</button>
+      <button class="btn-primary" id="mBtnOk">Aplicar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= PRINT SLOT ======================= -->
+<div id="printArea" class="print-area"></div>
+
+<script src="js/app.js"></script>
 </body>
 </html>
